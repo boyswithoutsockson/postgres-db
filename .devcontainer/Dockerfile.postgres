@@ -1,0 +1,10 @@
+# Dockerfile for custom Postgres image with built-in init scripts
+FROM postgres:latest
+
+# Copy initialization scripts into the image
+COPY postgres-init-scripts/ /docker-entrypoint-initdb.d/
+
+# Set permissions (Postgres runs as user 'postgres')
+RUN chmod -R 755 /docker-entrypoint-initdb.d/
+
+# No need to override entrypoint or CMD

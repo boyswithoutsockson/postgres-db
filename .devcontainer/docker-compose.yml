@@ -1,0 +1,34 @@
+services:
+  devcontainer:
+    container_name: devcontainer
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace
+    command: sleep infinity
+    networks:
+      - eduri-devcontainer
+
+  db:
+    container_name: postgres
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.postgres
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - eduri-devcontainer
+
+networks:
+  eduri-devcontainer:
+
+volumes:
+  postgres-data:
+  eduri-uv:
+  eduri-bashhistory:

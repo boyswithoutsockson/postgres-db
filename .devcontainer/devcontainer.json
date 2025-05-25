@@ -1,0 +1,55 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "Eduri",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_aliases,target=/home/vscode/.bash_aliases,readonly,type=bind",
+    "source=eduri-uv,target=/home/vscode/.local/share/uv",
+    "source=eduri-bashhistory,target=/commandhistory,type=volume"
+  ],
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [5432],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": {
+    "Fix Volume Permissions": "sudo chown -R $(whoami): /commandhistory"
+  },
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/va-h/devcontainers-features/difftastic:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "enableNonRootDocker": true
+    }
+  },
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "usernamehw.errorlens",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-containers",
+
+        // postgresql extensions
+        "ms-ossdata.vscode-pgsql",
+
+        // python extensions
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+
+        // astro extensions
+        "astro-build.astro-vscode"
+      ]
+    }
+  }
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
