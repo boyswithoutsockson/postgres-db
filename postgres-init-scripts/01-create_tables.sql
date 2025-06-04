@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS members_of_parliament (
     id INT PRIMARY KEY NOT NULL,
     first_name VARCHAR(200), 
     full_name VARCHAR(200),
-    party VARCHAR(4), 
+    party VARCHAR(200), 
     minister BOOLEAN, 
     phone_number VARCHAR(50), 
     email VARCHAR(200), 
