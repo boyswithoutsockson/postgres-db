@@ -36,19 +36,14 @@
         "usernamehw.errorlens",
         "eamodio.gitlens",
         "ms-azuretools.vscode-containers",
-
-        // postgresql extensions
+        "vivaxy.vscode-conventional-commits",
         "ms-ossdata.vscode-pgsql",
-
-        // python extensions
         "ms-python.python",
         "ms-python.vscode-pylance",
-
-        // astro extensions
         "astro-build.astro-vscode",
-
-        // Development lifecycle extensions
-        "vivaxy.vscode-conventional-commits"
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "zoma.vscode-auto-open-workspace"
       ]
     }
   }

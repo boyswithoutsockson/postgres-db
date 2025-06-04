@@ -1,32 +1,33 @@
 ---
-import { db } from '../../database';
-import Layout from '../../layouts/Layout.astro';
-import { decode, encode } from '../../utils';
+import { db } from "../../database";
+import Layout from "../../layouts/Layout.astro";
+import { decode, encode } from "../../utils";
 
 /** List all items of data that need a page generated for them */
 export async function getStaticPaths() {
-    const data = await db.selectFrom('members_of_parliament').selectAll().execute()
-    return data.map(mp => ({
-        params: { memberOfParliament: encode(mp.full_name || '') }
-    }))
+    const data = await db
+        .selectFrom("members_of_parliament")
+        .selectAll()
+        .execute();
+    return data.map((mp) => ({
+        params: { memberOfParliament: encode(mp.full_name || "") },
+    }));
 }
 
 const { memberOfParliament } = Astro.params;
 const mp = await db
-    .selectFrom('members_of_parliament')
-    .where('full_name', '=', decode(memberOfParliament))
+    .selectFrom("members_of_parliament")
+    .where("full_name", "=", decode(memberOfParliament))
     .selectAll()
-    .executeTakeFirst()
-
+    .executeTakeFirst();
 ---
 
 <Layout>
-	<main>
-		<h1>{mp?.full_name}</h1>
-		<p>{mp?.email}</p>
-		<p>{mp?.party}</p>
-		<p>{mp?.occupation}</p>
-		<p>{mp?.place_of_residence}</p>
-	</main>
+    <main>
+        <h1>{mp?.full_name}</h1>
+        <p>{mp?.email}</p>
+        <p>{mp?.party}</p>
+        <p>{mp?.occupation}</p>
+        <p>{mp?.place_of_residence}</p>
+    </main>
 </Layout>
-

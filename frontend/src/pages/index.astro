@@ -1,27 +1,31 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
-import { db } from '../database';
-import { encode } from '../utils';
+import { db } from "../database";
+import { encode } from "../utils";
 
-const data = await db.selectFrom('members_of_parliament').selectAll().execute()
+const data = await db.selectFrom("members_of_parliament").selectAll().execute();
 ---
 
 <Layout>
-	<main>
-		<h1>Eduri</h1>
-		<p>Tähän sit kontsaa</p>
-		<ul>
-			{data.map(mp => (
-				<li>
-					<p>
-						<strong>{mp.full_name}</strong>
-						<br />
-						{mp.party}
-						<a href={`/edustaja/${encode(mp.full_name || '')}`}>open mp page</a>
-					</p>
-				</li>
-			))}
-		</ul>
-	</main>
+    <main>
+        <h1>Eduri</h1>
+        <p>Tähän sit kontsaa</p>
+        <ul>
+            {
+                data.map((mp) => (
+                    <li>
+                        <p>
+                            <strong>{mp.full_name}</strong>
+                            <br />
+                            {mp.party}
+                            <a href={`/edustaja/${encode(mp.full_name || "")}`}>
+                                open mp page
+                            </a>
+                        </p>
+                    </li>
+                ))
+            }
+        </ul>
+    </main>
 </Layout>
