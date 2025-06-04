@@ -1,0 +1,23 @@
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit",
+        "source.fixAll.markdownlint": "always"
+    },
+
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "astro", // Enable .astro
+        "typescript", // Enable .ts
+        "typescriptreact" // Enable .tsx
+    ],
+
+    "[astro]": {
+        "editor.defaultFormatter": "astro-build.astro-vscode",
+        "editor.tabSize": 4
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}
