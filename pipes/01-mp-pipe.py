@@ -42,7 +42,7 @@ for mp in mp_data:
     place_of_residence = tree[15].text
     constituency = tree[26][0][0].text
     
-    cursor.execute("INSERT INTO members_of_parliament (id, first_name, full_name, party, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+    cursor.execute("INSERT INTO members_of_parliament (id, first_name, full_name, party, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);", 
                    (id, first_name, full_name, party, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency))
     
 conn.commit()
