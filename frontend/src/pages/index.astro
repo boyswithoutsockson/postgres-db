@@ -1,11 +1,27 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import { db } from '../database';
+import { encode } from '../utils';
+
+const data = await db.selectFrom('members_of_parliament').selectAll().execute()
 ---
 
 <Layout>
-	<Welcome />
+	<main>
+		<h1>Eduri</h1>
+		<p>Tähän sit kontsaa</p>
+		<ul>
+			{data.map(mp => (
+				<li>
+					<p>
+						<strong>{mp.full_name}</strong>
+						<br />
+						{mp.party}
+						<a href={`/edustaja/${encode(mp.full_name || '')}`}>open mp page</a>
+					</p>
+				</li>
+			))}
+		</ul>
+	</main>
 </Layout>
