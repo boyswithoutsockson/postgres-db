@@ -6,9 +6,16 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "codegen": "kysely-codegen --out-file ./src/database.gen.d.ts"
   },
   "dependencies": {
-    "astro": "^5.8.1"
+    "astro": "^5.8.1",
+    "kysely": "^0.28.2",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "kysely-codegen": "^0.18.5"
   }
 }
