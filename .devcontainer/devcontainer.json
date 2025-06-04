@@ -45,7 +45,10 @@
         "ms-python.vscode-pylance",
 
         // astro extensions
-        "astro-build.astro-vscode"
+        "astro-build.astro-vscode",
+
+        // Development lifecycle extensions
+        "vivaxy.vscode-conventional-commits"
       ]
     }
   }
