@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS members_of_parliament (
 
 -- Interests (sidonnaisuudet)
 CREATE TABLE IF NOT EXISTS interests (
-    id INT PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     mp_id INT, 
     category VARCHAR(200), 
     interest TEXT
