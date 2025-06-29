@@ -31,6 +31,6 @@ def harmonize_party(party):
         party = "-"
 
     else:
-        party = "muu"
+        party = party.lower()
 
     return party
