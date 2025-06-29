@@ -1,13 +1,10 @@
+import os.path
 import csv
 import psycopg2
 
-ballot_data = []
+with open(os.path.join("data", "SaliDBAanestys.tsv")) as f:
 
-with open("data/SaliDBAanestys.tsv") as fd:
-
-    for row in csv.reader(fd, delimiter="\t", quotechar='"'):
-        ballot_data.append(row)
-
+    ballot_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
 
 conn = psycopg2.connect(database="postgres",
                         host="db",
@@ -16,8 +13,7 @@ conn = psycopg2.connect(database="postgres",
                         port="5432")
 cursor = conn.cursor()
 
-ballot_data = ballot_data[1:]
-for ballot in ballot_data:
+for ballot in ballot_data[1:]:
 
     id = ballot[0]
     title = ballot[12]

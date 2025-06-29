@@ -1,14 +1,12 @@
+import os.path
 import xml.etree.ElementTree as ET
 import csv
 import psycopg2
 from harmonize import harmonize_party
 
-mp_data = []
+with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
 
-with open("data/MemberOfParliament.tsv") as fd:
-
-    for row in csv.reader(fd, delimiter="\t", quotechar='"'):
-        mp_data.append(row)
+    mp_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
 
 conn = psycopg2.connect(database="postgres",
                         host="db",
@@ -17,9 +15,7 @@ conn = psycopg2.connect(database="postgres",
                         port="5432")
 cursor = conn.cursor()
 
-mp_data = mp_data[1:]
-
-for mp in mp_data:
+for mp in mp_data[1:]:
 
     id = mp[0]
 
