@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS votes (
 
 -- Parties (puolueet)
 CREATE TABLE IF NOT EXISTS parties (
-    id VARCHAR(10) PRIMARY KEY,
+    id VARCHAR(100) PRIMARY KEY,
     name VARCHAR(100)
 );
 
