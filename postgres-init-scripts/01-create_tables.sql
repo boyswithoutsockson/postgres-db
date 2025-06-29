@@ -23,21 +23,24 @@ CREATE TABLE IF NOT EXISTS interests (
     interest TEXT
 );
 
-
+/*
 -- Agenda items (kokouskohdat)
 CREATE TABLE IF NOT EXISTS agenda_items (
     id INT PRIMARY KEY,
-    title VARCHAR(500),
-    time TIMESTAMP WITH TIME ZONE,
-    url VARCHAR(200)
+    title VARCHAR(1000),
+    start_time TIMESTAMP WITH TIME ZONE,
+    session VARCHAR(10),
+    sequence INT,
+    number FLOAT
 );
+*/
 
 -- Ballots (äänestykset)
 CREATE TABLE IF NOT EXISTS ballots (
     id INT PRIMARY KEY NOT NULL,
-    agenda_item_id INT REFERENCES agenda_items(id), 
     title VARCHAR(500),
-    time TIMESTAMP WITH TIME ZONE,
+    session_item_title VARCHAR(2000),
+    start_time TIMESTAMP WITH TIME ZONE,
     minutes_url VARCHAR(200),
     results_url VARCHAR(200)
 );
