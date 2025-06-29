@@ -22,12 +22,12 @@ const mp = await db
     .executeTakeFirst();
 ---
 
-<Layout>
+<Layout title={`${mp?.full_name} MP Page`}>
     <main>
-        <h1>{mp?.full_name}</h1>
-        <p>{mp?.email}</p>
-        <p>{mp?.party}</p>
-        <p>{mp?.occupation}</p>
-        <p>{mp?.place_of_residence}</p>
-    </main>
+    <h1>{mp?.full_name}</h1>
+    <p>{mp?.email}</p>
+    <p>{mp?.party}</p>
+    <p>{mp?.occupation}</p>
+    <p>{mp?.place_of_residence}</p>
 </Layout>
+

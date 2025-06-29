@@ -1,3 +1,9 @@
+---
+import NavBar  from '../components/NavBar.astro';
+
+const { title = 'Eduri'} = Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
     <head>
@@ -5,9 +11,15 @@
         <meta content="width=device-width" name="viewport" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
         <link href="/css/pico.classless.min.css" rel="stylesheet" />
-        <title>Eduri</title>
+        <title>{title}</title>
     </head>
+    <style>
+        body {
+            padding: 1.5rem;
+        }
+    </style>
     <body>
+        <NavBar />
         <slot />
     </body>
 </html>
