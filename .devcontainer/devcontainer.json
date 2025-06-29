@@ -26,7 +26,8 @@
     "ghcr.io/va-h/devcontainers-features/difftastic:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
       "enableNonRootDocker": true
-    }
+    },
+    "ghcr.io/iterative/features/dvc:1": {}
   },
 
   // Configure tool-specific properties.
