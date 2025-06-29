@@ -9,7 +9,8 @@
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_aliases,target=/home/vscode/.bash_aliases,readonly,type=bind",
     "source=eduri-uv,target=/home/vscode/.local/share/uv",
-    "source=eduri-bashhistory,target=/commandhistory,type=volume"
+    "source=eduri-bashhistory,target=/commandhistory,type=volume",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly,type=bind"
   ],
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
