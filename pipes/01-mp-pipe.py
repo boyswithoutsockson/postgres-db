@@ -5,7 +5,7 @@ from harmonize import harmonize_party
 
 mp_data = []
 
-with open("MemberOfParliament.tsv") as fd:
+with open("data/MemberOfParliament.tsv") as fd:
 
     for row in csv.reader(fd, delimiter="\t", quotechar='"'):
         mp_data.append(row)

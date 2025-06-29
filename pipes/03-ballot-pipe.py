@@ -3,18 +3,10 @@ import psycopg2
 
 ballot_data = []
 
-with open("SaliDBAanestys.tsv") as fd:
+with open("data/SaliDBAanestys.tsv") as fd:
 
     for row in csv.reader(fd, delimiter="\t", quotechar='"'):
         ballot_data.append(row)
-
-
-agenda_item_data = []
-
-with open("SaliDBKohta.tsv") as fd:
-
-    for row in csv.reader(fd, delimiter="\t", quotechar='"'):
-        agenda_item_data.append(row)
 
 
 conn = psycopg2.connect(database="postgres",

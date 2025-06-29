@@ -1,20 +1,11 @@
+import os.path
 import xml.etree.ElementTree as ET
 import csv
 import psycopg2
 
+with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
 
-"""
-
-
-:return:
-"""
-
-mp_data = []
-
-with open("MemberOfParliament.tsv") as fd:
-
-    for row in csv.reader(fd, delimiter="\t", quotechar='"'):
-        mp_data.append(row)
+    mp_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
 
 
 conn = psycopg2.connect(database="postgres",
