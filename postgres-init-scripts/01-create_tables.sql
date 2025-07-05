@@ -1,17 +1,18 @@
 -- Members of Parliament
 CREATE TABLE IF NOT EXISTS members_of_parliament (
     id INT PRIMARY KEY NOT NULL,
-    first_name VARCHAR(200), 
-    full_name VARCHAR(200),
-    party VARCHAR(200), 
-    minister BOOLEAN, 
+    first_name VARCHAR(200),
+    last_name VARCHAR(200),
+    full_name VARCHAR(200), 
+    minister BOOLEAN,
     phone_number VARCHAR(50), 
     email VARCHAR(200), 
     occupation VARCHAR(200), 
     year_of_birth INT, 
     place_of_birth VARCHAR(200), 
     place_of_residence VARCHAR(200), 
-    constituency VARCHAR(200)
+    constituency VARCHAR(200),
+    photo VARCHAR(100)
 );
 
 

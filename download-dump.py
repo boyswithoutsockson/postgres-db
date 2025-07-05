@@ -15,7 +15,7 @@ def download_file(file_id, output):
 
 def unzip_file(file_path):
     with zipfile.ZipFile(file_path, 'r') as z:
-        z.extractall("/".join(file_path.split("/")[:-1]))
+        z.extractall(os.path.dirname(file_path))
 
 if __name__ == "__main__":
     file_id = "1cQb23nkz-DAlo33cU96BnPjdnXU9MoFA"
