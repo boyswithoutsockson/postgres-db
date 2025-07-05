@@ -6,7 +6,7 @@ from harmonize import harmonize_party
 
 with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
 
-    vote_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
+    vote_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
         
 
 conn = psycopg2.connect(database="postgres",
