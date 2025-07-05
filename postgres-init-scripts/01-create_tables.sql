@@ -74,10 +74,10 @@ CREATE TABLE IF NOT EXISTS parties (
 
 -- mp_party_memberships
 CREATE TABLE IF NOT EXISTS mp_party_memberships (
-    party_id VARCHAR(10) REFERENCES parties(id),
+    party_id VARCHAR(100) REFERENCES parties(id),
     mp_id INT REFERENCES members_of_parliament(id),
-    start_time TIMESTAMP WITH TIME ZONE,
-    end_time TIMESTAMP WITH TIME ZONE,
-    PRIMARY KEY(party_id, mp_id, start_time)
+    start_date DATE,
+    end_date DATE,
+    PRIMARY KEY(party_id, mp_id, start_date)
 );
 
