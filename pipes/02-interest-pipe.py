@@ -5,7 +5,7 @@ import psycopg2
 
 with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
 
-    mp_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
+    mp_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
 
 
 conn = psycopg2.connect(database="postgres",

@@ -17,7 +17,7 @@ vote_dict = {"Jaa": "yes",
 
 with open(os.path.join("data", "SaliDBAanestysEdustaja.tsv")) as f:
 
-    vote_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
+    vote_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
         
 
 conn = psycopg2.connect(database="postgres",

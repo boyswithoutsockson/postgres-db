@@ -4,7 +4,7 @@ import psycopg2
 
 with open(os.path.join("data", "SaliDBAanestys.tsv")) as f:
 
-    ballot_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
+    ballot_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
 
 conn = psycopg2.connect(database="postgres",
                         host="db",
