@@ -1,6 +1,9 @@
 import os.path
 import csv
 import psycopg2
+import pandas as pd
+from db import pg_engine
+
 
 vote_dict = {"Jaa": "yes",
             "Ja": "yes",
@@ -16,35 +19,23 @@ vote_dict = {"Jaa": "yes",
             "Blank": "abstain"}
 
 with open(os.path.join("data", "SaliDBAanestysEdustaja.tsv")) as f:
+    print("Reading file...")
+    vote_data = pd.read_csv(f, sep="\t")[["EdustajaHenkiloNumero", "AanestysId", "EdustajaAanestys"]]
+    print("Done!")
 
-    vote_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
-        
+#for vote_instance in vote_data[1:]:
+#    mp_id = int(vote_instance[4])
+#    ballot_id = vote_instance[1]
+#    vote = vote_instance[6].strip()
+#    cursor.execute("INSERT INTO votes (ballot_id, mp_id, vote) VALUES (%s, %s, %s);", 
+#                    (ballot_id, mp_id, vote_dict[vote]))
 
-conn = psycopg2.connect(database="postgres",
-                        host="db",
-                        user="postgres",
-                        password="postgres",
-                        port="5432")
-cursor = conn.cursor()
+vote_data["EdustajaAanestys"] = vote_data["EdustajaAanestys"].str.strip().apply(
+    lambda x: vote_dict[x]
+)
 
+vote_data.columns = ["mp_id", "ballot_id", "vote"]
 
-cursor.execute("""SELECT id FROM members_of_parliament;""")
-
-active_mps = [mp[0] for mp in cursor.fetchall()]
-
-for vote_instance in vote_data[1:]:
-    
-    mp_id = int(vote_instance[4])
-
-    if mp_id not in active_mps:
-        continue
-
-    ballot_id = vote_instance[1]
-    vote = vote_instance[6].strip()
-    
-    cursor.execute("INSERT INTO votes (ballot_id, mp_id, vote) VALUES (%s, %s, %s);", 
-                    (ballot_id, mp_id, vote_dict[vote]))
-    
-conn.commit()
-cursor.close()
-conn.close()
+print("Writing...")
+vote_data.to_sql(name="votes", con=pg_engine(), if_exists="append", index=False)
+print("Done!")
