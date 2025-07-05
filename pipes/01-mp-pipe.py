@@ -3,7 +3,6 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import csv
 import psycopg2
-from harmonize import harmonize_party
 
 with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
     df = pd.read_csv(f, sep="\t")
