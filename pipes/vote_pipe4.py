@@ -38,9 +38,7 @@ if __name__ == "__main__":
             table_name="votes",
             connection=URI,
             engine="adbc",
-            engine_options={"temporary": True},
         )
     )
-
     end = time.perf_counter()
     print(f"Executed in {end - start:.2f} seconds. Created {count} rows.")
