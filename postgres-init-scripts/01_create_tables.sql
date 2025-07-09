@@ -82,3 +82,17 @@ CREATE TABLE IF NOT EXISTS mp_party_memberships (
     PRIMARY KEY(party_id, mp_id, start_date)
 );
 
+-- committees (valiokunnat)
+CREATE TABLE IF NOT EXISTS committees (
+    name VARCHAR(200) PRIMARY KEY
+);
+
+-- mp_committee_memberships
+CREATE TABLE IF NOT EXISTS mp_committee_memberships (
+    mp_id INT NOT NULL,
+    committee_name VARCHAR(200) NOT NULL REFERENCES committees(name),
+    start_date DATE NOT NULL,
+    end_date DATE,
+    role VARCHAR(50) NOT NULL,
+    PRIMARY KEY(mp_id, committee_name, start_date, role)
+);
