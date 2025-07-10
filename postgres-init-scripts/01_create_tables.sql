@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS ballots (
     title VARCHAR(500),
     session_item_title VARCHAR(2000),
     start_time TIMESTAMP WITH TIME ZONE,
+    parliament_id VARCHAR(50),
     minutes_url VARCHAR(200),
     results_url VARCHAR(200)
 );
