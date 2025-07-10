@@ -5,29 +5,26 @@
 
 import type { ColumnType } from "kysely";
 
+export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
+  ? ColumnType<S, I | undefined, U>
+  : ColumnType<T, T | undefined, T>;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export type Vote = "absent" | "abstain" | "no" | "yes";
 
-export interface AgendaItems {
-  id: number;
-  time: Timestamp | null;
-  title: string | null;
-  url: string | null;
-}
-
 export interface Ballots {
-  agenda_item_id: number | null;
   id: number;
   minutes_url: string | null;
   results_url: string | null;
-  time: Timestamp | null;
+  session_item_title: string | null;
+  start_time: Timestamp | null;
   title: string | null;
 }
 
 export interface Interests {
   category: string | null;
-  id: number;
+  id: Generated<number>;
   interest: string | null;
   mp_id: number | null;
 }
@@ -38,20 +35,21 @@ export interface MembersOfParliament {
   first_name: string | null;
   full_name: string | null;
   id: number;
+  last_name: string | null;
   minister: boolean | null;
   occupation: string | null;
-  party: string | null;
   phone_number: string | null;
+  photo: string | null;
   place_of_birth: string | null;
   place_of_residence: string | null;
   year_of_birth: number | null;
 }
 
 export interface MpPartyMemberships {
-  end_time: Timestamp | null;
+  end_date: Timestamp | null;
   mp_id: number;
   party_id: string;
-  start_time: Timestamp;
+  start_date: Timestamp;
 }
 
 export interface Parties {
@@ -66,7 +64,6 @@ export interface Votes {
 }
 
 export interface DB {
-  agenda_items: AgendaItems;
   ballots: Ballots;
   interests: Interests;
   members_of_parliament: MembersOfParliament;

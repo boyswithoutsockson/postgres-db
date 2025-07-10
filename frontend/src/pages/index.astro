@@ -1,31 +1,68 @@
 ---
+// we disable this rule as our style declaration has automagically applied
+// styles from live-filter
+/* eslint-disable astro/no-unused-css-selector */
 import Layout from "../layouts/Layout.astro";
 
 import { db } from "../database";
-import { encode } from "../utils";
+import MemberListItem from "../components/MemberListItem.astro";
 
-const data = await db.selectFrom("members_of_parliament").selectAll().execute();
+const data = await db
+    .selectFrom("members_of_parliament")
+    .leftJoin(
+        "mp_party_memberships",
+        "members_of_parliament.id",
+        "mp_party_memberships.mp_id"
+    )
+    .select([
+        "members_of_parliament.id",
+        "members_of_parliament.full_name",
+        "members_of_parliament.photo",
+        "mp_party_memberships.party_id",
+    ])
+    .distinctOn("members_of_parliament.id")
+    .execute();
 ---
 
 <Layout>
     <main>
         <h1>Eduri</h1>
         <p>Tähän sit kontsaa</p>
-        <ul>
-            {
-                data.map((mp) => (
-                    <li>
-                        <p>
-                            <strong>{mp.full_name}</strong>
-                            <br />
-                            {mp.party}
-                            <a href={`/edustaja/${encode(mp.full_name || "")}`}>
-                                open mp page
-                            </a>
-                        </p>
-                    </li>
-                ))
-            }
-        </ul>
+
+        <live-filter case="insensitive">
+            <input
+                aria-controls="list"
+                aria-label="Hae kansanedustajista..."
+                placeholder="Hae kansanedustajista..."
+                type="search"
+            />
+            <ul aria-live="polite" id="list">
+                {
+                    data.map((mp) => (
+                        <li>
+                            <MemberListItem mp={mp} />
+                        </li>
+                    ))
+                }
+            </ul>
+        </live-filter>
     </main>
 </Layout>
+
+<script>
+    // as web components rely on DOM APIs, we need to lazily load this script
+    // only in client and not during rendering.
+    import "@daviddarnes/live-filter";
+</script>
+
+<style>
+    ul {
+        padding-inline-start: unset;
+    }
+    li {
+        list-style: none;
+    }
+    [data-live-filter-match="false"] {
+        display: none;
+    }
+</style>
