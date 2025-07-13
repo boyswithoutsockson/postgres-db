@@ -44,6 +44,8 @@ clean-data: ## deletes all raw data assets
 	rm data/*
 	rm frontend/src/assets/*
 
-##############################
-# Scripts for data pipelines #
-##############################
+##################################
+# Scripts for data preprocessing #
+##################################
+
+mps: pipes/mp_pipe.py data/MemberOfParliament.tsv $(DATA_DUMP) $(MP_PHOTOS)
