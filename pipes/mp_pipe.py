@@ -3,25 +3,21 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import csv
 import psycopg2
-from tqdm import tqdm
 
-def mp_pipe():
+
+csv_path = 'data/members_of_parliament.csv'
+
+
+def preprocess_data():
     with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
         df = pd.read_csv(f, sep="\t")
-        mp_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
-
-    conn = psycopg2.connect(database="postgres",
-                            host="db",
-                            user="postgres",
-                            password="postgres",
-                            port="5432")
-    cursor = conn.cursor()
 
     photo_filenames = os.listdir("frontend/src/assets/")
     photo_filename_dict = {
         filename.split(".")[0].split("-")[-1]: filename for filename in photo_filenames
     }
 
+    rows = []
     for mp in df.iterrows():
         mp = mp[1]
 
@@ -32,27 +28,47 @@ def mp_pipe():
         xml = mp['XmlDataFi']
         tree = ET.fromstring(xml)
 
-        first_name = mp['firstname'].strip()
-        last_name = mp['lastname'].strip()
-        full_name = f"{tree[1].text} {tree[2].text}"
-        phone_number = tree[6].text
-        email = tree[7].text
-        occupation = tree[9].text
-        year_of_birth = tree[10].text
-        place_of_birth = tree[11].text
-        place_of_residence = tree[15].text
-        constituency = tree[26][0][0].text
-        try:
-            photo = photo_filename_dict[id]
-        except KeyError:
-            photo = None  # No photo available
+        row = {
+            "first_name": mp['firstname'].strip(),
+            "last_name": mp['lastname'].strip(),
+            "full_name": f"{tree[1].text} {tree[2].text}",
+            "phone_number": tree[6].text,
+            "email": tree[7].text,
+            "occupation": tree[9].text,
+            "year_of_birth": tree[10].text,
+            "place_of_birth": tree[11].text,
+            "place_of_residence": tree[15].text,
+            "constituency": tree[26][0][0].text,
+            "photo": photo_filename_dict[id] if id in photo_filename_dict else None
+        }
 
-        cursor.execute("INSERT INTO members_of_parliament (id, first_name, last_name, full_name, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency, photo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);", 
-                    (id, first_name, last_name, full_name, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency, photo))
+        rows.append(row)
+
+    with open(csv_path) as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer.writerows(rows)
         
+def import_data():
+    conn = psycopg2.connect(database="postgres",
+                            host="db",
+                            user="postgres",
+                            password="postgres",
+                            port="5432")
+    cursor = conn.cursor()
+
+    with open(csv_path) as f:
+        cursor.copy_from(f, 'votes', columns=('mp_id', 'ballot_id', 'vote'), sep=",")
+    cursor.copy_expert("COPY members_of_parliament(id, first_name, last_name, full_name, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency, photo) FROM stdin CSV HEADER '\"';", f)
     conn.commit()
     cursor.close()
     conn.close()
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preprocess", help="preprocess the data", action="store_true")
+    parser.add_argument("--import", help="import preprocessed data", action="store_true")
+    args = parser.parse_args()
+    if args.verbose:
+        print("verbosity turned on")
     mp_pipe()
