@@ -2,57 +2,51 @@ import os.path
 import xml.etree.ElementTree as ET
 import csv
 import psycopg2
+import xmltodict
+import pandas as pd
 
 def interest_pipe():
-    with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
+    with open(os.path.join("data", "MemberOfParliament.tsv"), "r") as f:
+        MoP = pd.read_csv(f, sep="\t")
 
-        mp_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
+    xml_dicts = MoP.XmlDataFi.apply(xmltodict.parse)
+    rows = []
+    for henkilo in xml_dicts:
+        mp_id = henkilo['Henkilo']['HenkiloNro']
 
+        if henkilo['Henkilo']['Sidonnaisuudet'] is None:
+            continue
 
+        interest = henkilo['Henkilo']['Sidonnaisuudet']['Sidonnaisuus']
+
+        if isinstance(interest, dict):
+            interest = [interest]
+
+        rows.extend([
+            {'mp_id': mp_id, 'category': x['RyhmaOtsikko'], 'interest': x['Sidonta']}
+            for x in interest
+            if 'Sidonta' in x and x['Sidonta'] not in [None, 'Ei ilmoitettavia sidonnaisuuksia', 'Ei ilmoitettavia tuloja']
+        ])
+
+    print("Writing csv...")
+    with open('data/interests.csv', 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=["mp_id", "category", "interest"])
+        writer.writerows(rows)
+    print("Done!")
+
+    print("Writing database...")
     conn = psycopg2.connect(database="postgres",
                             host="db",
                             user="postgres",
                             password="postgres",
                             port="5432")
     cursor = conn.cursor()
+    with open('data/interests.csv') as f:
+        cursor.copy_expert("COPY interests(mp_id, category, interest) FROM stdin DELIMITERS ',' CSV QUOTE '\"';", f)
 
-    mp_data = mp_data[1:]
-
-    for mp in mp_data:
-
-        mp_id = mp[0]
-
-        xml = mp[7]
-        tree = ET.fromstring(xml)
-
-        interests = {}
-
-        for i in tree.find("Sidonnaisuudet").findall("Sidonnaisuus"):
-            interest = i.find("Sidonta")
-
-            if interest is None:
-                continue
-
-            if interest.text is None or interest.text == "None" or "Ei ilmoitettavia" in interest.text:
-                continue
-
-            interest_type = i.find("RyhmaOtsikko")
-
-            try:
-                interests[interest_type.text] = interests[interest_type.text].append(interest.text)
-            except:
-                interests[interest_type.text] = [interest.text]
-
-        for type in interests:
-            type = type
-            if interests[type]:
-                for interest in interests[type]:
-                    cursor.execute("INSERT INTO Interests (mp_id, category, interest) VALUES (%s, %s, %s);", 
-                                (mp_id, type, interest))
-                    
+    print("Done!")
 
     conn.commit()
-
     cursor.close()
     conn.close()
 
