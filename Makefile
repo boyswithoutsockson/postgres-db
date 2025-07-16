@@ -44,8 +44,8 @@ data: $(DATA_DUMP) $(MP_PHOTOS) ## download and extract all raw data assets
 
 .PHONY: clean-data
 clean: ## deletes all raw data assets
-	rm data/*
-	rm frontend/src/assets/*
+	rm -rf data/.[!.]*
+	rm -f frontend/src/assets/.[!.]*
 
 
 ##################################
