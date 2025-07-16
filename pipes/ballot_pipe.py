@@ -24,7 +24,6 @@ def preprocess_data():
 
     with open(csv_path, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=rows[0].keys())
-        writer.writeheader()
         writer.writerows(rows)
 
 def import_data():
@@ -36,7 +35,7 @@ def import_data():
     cursor = conn.cursor()
 
     with open(csv_path) as f:
-        cursor.copy_expert("COPY ballots(id, title, session_item_title, start_time, minutes_url, results_url) FROM stdin DELIMITERS ',' CSV HEADER QUOTE '\"';", f)
+        cursor.copy_expert("COPY ballots(id, title, session_item_title, start_time, parliament_id, minutes_url, results_url) FROM stdin DELIMITERS ',' CSV QUOTE '\"';", f)
         
     conn.commit()
     cursor.close()
