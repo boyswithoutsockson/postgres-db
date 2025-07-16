@@ -8,7 +8,7 @@ import pandas as pd
 csv_path = 'data/preprocessed/interests.csv'
 
 def preprocess_data():
-    with open(os.path.join("data", "MemberOfParliament.tsv"), "r") as f:
+    with open(os.path.join("data", "raw", "MemberOfParliament.tsv"), "r") as f:
         MoP = pd.read_csv(f, sep="\t")
 
     xml_dicts = MoP.XmlDataFi.apply(xmltodict.parse)
