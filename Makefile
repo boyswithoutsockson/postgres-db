@@ -82,6 +82,7 @@ data/preprocessed/mp_committee_memberships.csv: pipes/mp_committee_membership_pi
 nuke: ## resets all data in the database
 	PGPASSWORD=postgres psql -q -U postgres -h db postgres < DELETE_ALL_TABLES.sql
 	PGPASSWORD=postgres psql -q -U postgres -h db postgres < postgres-init-scripts/01_create_tables.sql
+	rm -f data/.inserted
 
 PREPROCESSED_FILES = data/preprocessed/members_of_parliament.csv \
     data/preprocessed/interests.csv \
@@ -92,8 +93,9 @@ PREPROCESSED_FILES = data/preprocessed/members_of_parliament.csv \
     data/preprocessed/committees.csv \
     data/preprocessed/mp_committee_memberships.csv
 
-.PHONY: database
-database: $(PREPROCESSED_FILES) ## runs all data pipelines into the database
+DATABASE = data/.inserted
+$(DATABASE): $(PREPROCESSED_FILES)
+	@touch $@
 	@bash -c '\
 	TIMEFORMAT="Finished in %3R seconds."; \
 	for script in \
@@ -109,3 +111,6 @@ database: $(PREPROCESSED_FILES) ## runs all data pipelines into the database
 		echo "Importing data with $$script"; \
 		time uv run $$script --import-data; \
 	done'
+
+.PHONY: database
+database: $(DATABASE) ## runs all data pipelines into the database
