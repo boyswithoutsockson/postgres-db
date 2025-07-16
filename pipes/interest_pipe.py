@@ -30,7 +30,7 @@ def preprocess_data():
             if 'Sidonta' in x and x['Sidonta'] not in [None, 'Ei ilmoitettavia sidonnaisuuksia', 'Ei ilmoitettavia tuloja']
         ])
 
-    with open('data/interests.csv', 'w') as f:
+    with open(csv_path, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=["mp_id", "category", "interest"])
         writer.writerows(rows)
 
