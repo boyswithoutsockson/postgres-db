@@ -20,6 +20,7 @@ def ballot_pipe():
         title = ballot[12]
         session_item_title = ballot[21]
         start_time = f"{ballot[9]} Europe/Helsinki"
+        parliament_id = ballot[31]
         minutes_url = ballot[30]
         results_url = ballot[28]
 
