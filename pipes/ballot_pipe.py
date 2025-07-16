@@ -24,8 +24,8 @@ def ballot_pipe():
         minutes_url = ballot[30]
         results_url = ballot[28]
 
-        cursor.execute("INSERT INTO ballots (id, title, session_item_title, start_time, minutes_url, results_url) VALUES (%s, %s, %s, %s, %s, %s);", 
-                        (id, title, session_item_title, start_time, minutes_url, results_url))
+        cursor.execute("INSERT INTO ballots (id, title, session_item_title, start_time, parliament_id, minutes_url, results_url) VALUES (%s, %s, %s, %s, %s, %s, %s);", 
+                        (id, title, session_item_title, start_time, parliament_id, minutes_url, results_url))
         
     conn.commit()
     cursor.close()
