@@ -5,7 +5,9 @@ import psycopg2
 import xmltodict
 import pandas as pd
 
-def interest_pipe():
+csv_path = 'data/preprocessed/interests.csv'
+
+def preprocess_data():
     with open(os.path.join("data", "MemberOfParliament.tsv"), "r") as f:
         MoP = pd.read_csv(f, sep="\t")
 
@@ -28,27 +30,35 @@ def interest_pipe():
             if 'Sidonta' in x and x['Sidonta'] not in [None, 'Ei ilmoitettavia sidonnaisuuksia', 'Ei ilmoitettavia tuloja']
         ])
 
-    print("Writing csv...")
     with open('data/interests.csv', 'w') as f:
         writer = csv.DictWriter(f, fieldnames=["mp_id", "category", "interest"])
         writer.writerows(rows)
-    print("Done!")
 
-    print("Writing database...")
+def import_data():
     conn = psycopg2.connect(database="postgres",
                             host="db",
                             user="postgres",
                             password="postgres",
                             port="5432")
     cursor = conn.cursor()
-    with open('data/interests.csv') as f:
-        cursor.copy_expert("COPY interests(mp_id, category, interest) FROM stdin DELIMITERS ',' CSV QUOTE '\"';", f)
 
-    print("Done!")
+    with open(csv_path) as f:
+        cursor.copy_expert("COPY interests(mp_id, category, interest) FROM stdin DELIMITERS ',' CSV QUOTE '\"';", f)
 
     conn.commit()
     cursor.close()
     conn.close()
 
 if __name__ == '__main__':
-    interest_pipe()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preprocess-data", help="preprocess the data", action="store_true")
+    parser.add_argument("--import-data", help="import preprocessed data", action="store_true")
+    args = parser.parse_args()
+    if args.preprocess_data:
+        preprocess_data()
+    if args.import_data:
+        import_data()
+    if not args.preprocess_data and not args.import_data:
+        preprocess_data()
+        import_data()

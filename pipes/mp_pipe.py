@@ -5,11 +5,11 @@ import csv
 import psycopg2
 
 
-csv_path = 'data/members_of_parliament.csv'
+csv_path = 'data/preprocessed/members_of_parliament.csv'
 
 
 def preprocess_data():
-    with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
+    with open(os.path.join("data", "raw", "MemberOfParliament.tsv")) as f:
         df = pd.read_csv(f, sep="\t")
 
     photo_filenames = os.listdir("frontend/src/assets/")
@@ -29,9 +29,11 @@ def preprocess_data():
         tree = ET.fromstring(xml)
 
         row = {
+            "id": id,
             "first_name": mp['firstname'].strip(),
             "last_name": mp['lastname'].strip(),
             "full_name": f"{tree[1].text} {tree[2].text}",
+            "minister": minister,
             "phone_number": tree[6].text,
             "email": tree[7].text,
             "occupation": tree[9].text,
@@ -44,7 +46,7 @@ def preprocess_data():
 
         rows.append(row)
 
-    with open(csv_path) as f:
+    with open(csv_path, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=rows[0].keys())
         writer.writerows(rows)
         
@@ -57,8 +59,8 @@ def import_data():
     cursor = conn.cursor()
 
     with open(csv_path) as f:
-        cursor.copy_from(f, 'votes', columns=('mp_id', 'ballot_id', 'vote'), sep=",")
-    cursor.copy_expert("COPY members_of_parliament(id, first_name, last_name, full_name, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency, photo) FROM stdin CSV HEADER '\"';", f)
+        cursor.copy_expert("COPY members_of_parliament(id, first_name, last_name, full_name, minister, phone_number, email, occupation, year_of_birth, place_of_birth, place_of_residence, constituency, photo) FROM stdin DELIMITERS ',' CSV QUOTE '\"';", f)
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -66,9 +68,14 @@ def import_data():
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--preprocess", help="preprocess the data", action="store_true")
-    parser.add_argument("--import", help="import preprocessed data", action="store_true")
+    parser.add_argument("--preprocess-data", help="preprocess the data", action="store_true")
+    parser.add_argument("--import-data", help="import preprocessed data", action="store_true")
     args = parser.parse_args()
-    if args.verbose:
-        print("verbosity turned on")
-    mp_pipe()
+    if args.preprocess_data:
+        preprocess_data()
+    if args.import_data:
+        import_data()
+    if not args.preprocess_data and not args.import_data:
+        import_data()
+        preprocess_data()
+
