@@ -10,6 +10,7 @@ help: ## show help message
 # Default for `make` without any args
 all: help
 
+
 ####################################
 # Scripts for downloading raw data #
 ####################################
@@ -46,6 +47,7 @@ clean: ## deletes all raw data assets
 	rm data/*
 	rm frontend/src/assets/*
 
+
 ##################################
 # Scripts for data preprocessing #
 ##################################
@@ -73,6 +75,7 @@ data/preprocessed/committees.csv: pipes/committee_pipe.py $(DATA_DUMP)
 
 data/preprocessed/mp_committee_memberships.csv: pipes/mp_committee_membership_pipe.py $(DATA_DUMP)
 	uv run pipes/mp_committee_membership_pipe.py --preprocess-data
+
 
 #################################
 # Scripts for database creation #
@@ -114,3 +117,13 @@ $(DATABASE): $(PREPROCESSED_FILES)
 
 .PHONY: database
 database: $(DATABASE) ## runs all data pipelines into the database
+
+
+###############################
+# Frontend management scripts #
+###############################
+
+.PHONY: frontend
+frontend:
+	cd frontend
+	npm run dev
