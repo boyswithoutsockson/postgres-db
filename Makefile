@@ -1,5 +1,6 @@
 # This makefile contains recipes for constructing the database.
 
+SHELL := /bin/bash
 .ONESHELL:
 
 .PHONY: help
@@ -14,7 +15,8 @@ all: help
 ####################################
 
 data/dump.zip:
-	mkdir -p data
+	mkdir -p data/raw
+	mkdir -p data/preprocessed
 	FILE_ID=1cQb23nkz-DAlo33cU96BnPjdnXU9MoFA
 	curl -L "https://drive.usercontent.google.com/download?id=$${FILE_ID}&confirm=true" --progress-bar \
 		-o $@
@@ -22,7 +24,7 @@ data/dump.zip:
 DATA_DUMP = data/.unzipped
 $(DATA_DUMP): data/dump.zip
 	@touch $@
-	unzip -oq data/dump.zip -d data
+	unzip -oq data/dump.zip -d data/raw
 
 
 frontend/src/assets/photos-2023-2026.zip:
@@ -40,7 +42,7 @@ $(MP_PHOTOS): frontend/src/assets/photos-2023-2026.zip
 data: $(DATA_DUMP) $(MP_PHOTOS) ## download and extract all raw data assets
 
 .PHONY: clean-data
-clean-data: ## deletes all raw data assets
+clean: ## deletes all raw data assets
 	rm data/*
 	rm frontend/src/assets/*
 
@@ -48,4 +50,62 @@ clean-data: ## deletes all raw data assets
 # Scripts for data preprocessing #
 ##################################
 
-mps: pipes/mp_pipe.py data/MemberOfParliament.tsv $(DATA_DUMP) $(MP_PHOTOS)
+data/preprocessed/members_of_parliament.csv: pipes/mp_pipe.py $(DATA_DUMP) $(MP_PHOTOS)
+	uv run pipes/mp_pipe.py --preprocess-data
+
+data/preprocessed/interests.csv: pipes/interest_pipe.py $(DATA_DUMP)
+	uv run pipes/interest_pipe.py --preprocess-data
+
+data/preprocessed/ballots.csv: pipes/ballot_pipe.py $(DATA_DUMP)
+	uv run pipes/ballot_pipe.py --preprocess-data
+
+data/preprocessed/votes.csv: pipes/vote_pipe.py $(DATA_DUMP)
+	uv run pipes/vote_pipe.py --preprocess-data
+
+data/preprocessed/parties.csv: pipes/parties_pipe.py $(DATA_DUMP)
+	uv run pipes/parties_pipe.py --preprocess-data
+
+data/preprocessed/mp_party_memberships.csv: pipes/mp_party_membership_pipe.py $(DATA_DUMP)
+	uv run pipes/mp_party_membership_pipe.py --preprocess-data
+
+data/preprocessed/committees.csv: pipes/committee_pipe.py $(DATA_DUMP)
+	uv run pipes/committee_pipe.py --preprocess-data
+
+data/preprocessed/mp_committee_memberships.csv: pipes/mp_committee_membership_pipe.py $(DATA_DUMP)
+	uv run pipes/mp_committee_membership_pipe.py --preprocess-data
+
+#################################
+# Scripts for database creation #
+#################################
+
+.PHONY: nuke
+nuke: ## resets all data in the database
+	PGPASSWORD=postgres psql -q -U postgres -h db postgres < DELETE_ALL_TABLES.sql
+	PGPASSWORD=postgres psql -q -U postgres -h db postgres < postgres-init-scripts/01_create_tables.sql
+
+PREPROCESSED_FILES = data/preprocessed/members_of_parliament.csv \
+    data/preprocessed/interests.csv \
+    data/preprocessed/ballots.csv \
+    data/preprocessed/votes.csv \
+    data/preprocessed/parties.csv \
+    data/preprocessed/mp_party_memberships.csv \
+    data/preprocessed/committees.csv \
+    data/preprocessed/mp_committee_memberships.csv
+
+.PHONY: database
+database: $(PREPROCESSED_FILES) ## runs all data pipelines into the database
+	@bash -c '\
+	TIMEFORMAT="Finished in %3R seconds."; \
+	for script in \
+		pipes/mp_pipe.py \
+		pipes/interest_pipe.py \
+		pipes/ballot_pipe.py \
+		pipes/vote_pipe.py \
+		pipes/parties_pipe.py \
+		pipes/mp_party_membership_pipe.py \
+		pipes/committee_pipe.py \
+		pipes/mp_committee_membership_pipe.py;
+	do \
+		echo "Importing data with $$script"; \
+		time uv run $$script --import-data; \
+	done'
