@@ -1,11 +1,11 @@
 import os
 import pandas as pd
-from db import pg_engine
 import xmltodict
 import psycopg2
 
-def committee_pipe():
-    
+csv_path = 'data/preprocessed/committees.csv'
+
+def preprocess_data():
     committees = {"Suuri valiokunta": "SuV",
                     "Perustuslakivaliokunta": "PeV",
                     "Ulkoasiainvaliokunta": "UaV",
@@ -26,21 +26,13 @@ def committee_pipe():
 
     earliest_retirement_date = "2000-01-01"
 
-    roles = {"jäsen": "member",
-          "varajäsen": "associate",
-          "lisäjäsen": "additional",
-          "puheenjohtaja": "chair",
-          "varapuheenjohtaja": "first vice",
-          "ensimmäinen varapuheenjohtaja": "first vice",
-          "toinen varapuheenjohtaja": "second vice"}
-
-    with open(os.path.join("data", "MemberOfParliament.tsv"), "r") as f:
+    with open(os.path.join("data", "raw", "MemberOfParliament.tsv"), "r") as f:
         MoP = pd.read_csv(f, sep="\t")
 
     xml_dicts = MoP.XmlDataFi.apply(xmltodict.parse)
     committee_df = pd.DataFrame(columns=["committee_name"])
+    
     for henkilo in xml_dicts:
-        mp_id = int(henkilo['Henkilo']["HenkiloNro"])
         if henkilo['Henkilo']['KansanedustajuusPaattynytPvm']:
             retirement_date = "-".join(list(reversed((henkilo['Henkilo']['KansanedustajuusPaattynytPvm']).split("."))))
         else:
@@ -68,22 +60,33 @@ def committee_pipe():
                     committee_df.loc[len(committee_df)] = committee["Nimi"]
     
     committee_df = committee_df.drop_duplicates()
-    committee_df.to_csv("data/committees.csv", index=False, header=False)
+    committee_df.to_csv(csv_path, index=False)
 
-    print("Writing database...")
+def import_data():
     conn = psycopg2.connect(database="postgres",
                             host="db",
                             user="postgres",
                             password="postgres",
                             port="5432")
     cursor = conn.cursor()
-    with open('data/committees.csv') as f:
-        cursor.copy_from(f, 'committees', sep=",")
+    
+    with open(csv_path) as f:
+        cursor.copy_expert("COPY committees FROM stdin DELIMITERS ',' CSV HEADER QUOTE '\"';", f)
+    
     conn.commit()
     cursor.close()
     conn.close()
 
-    print("Done!")
-
-if __name__ == "__main__":
-    committee_pipe()
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preprocess-data", help="preprocess the data", action="store_true")
+    parser.add_argument("--import-data", help="import preprocessed data", action="store_true")
+    args = parser.parse_args()
+    if args.preprocess_data:
+        preprocess_data()
+    if args.import_data:
+        import_data()
+    if not args.preprocess_data and not args.import_data:
+        preprocess_data()
+        import_data()

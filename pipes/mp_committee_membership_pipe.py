@@ -3,10 +3,11 @@ import pandas as pd
 import numpy as np
 import psycopg2
 import xmltodict
-from db import pg_engine
+import argparse
 
-def mp_committee_membership_pipe():
+csv_path = 'data/preprocessed/mp_committee_memberships.csv'
 
+def preprocess_data():
     earliest_retirement_date = "2000-01-01"
 
     roles = {"jäsen": "member",
@@ -17,7 +18,7 @@ def mp_committee_membership_pipe():
           "ensimmäinen varapuheenjohtaja": "first vice",
           "toinen varapuheenjohtaja": "second vice"}
 
-    with open(os.path.join("data", "MemberOfParliament.tsv"), "r") as f:
+    with open(os.path.join("data", "raw", "MemberOfParliament.tsv"), "r") as f:
         MoP = pd.read_csv(f, sep="\t")
 
     xml_dicts = MoP.XmlDataFi.apply(xmltodict.parse)
@@ -66,22 +67,32 @@ def mp_committee_membership_pipe():
                             role = roles[membership["Rooli"].lower()]
                             membership_df.loc[len(membership_df)] = [mp_id, committee_name, start_date, end_date, role]
         
-    membership_df.to_csv("data/mp_committee_memberships.csv", index=False, header=False)
+    membership_df.to_csv(csv_path, index=False)
 
-    print("Writing database...")
+def import_data():
     conn = psycopg2.connect(database="postgres",
                             host="db",
                             user="postgres",
                             password="postgres",
                             port="5432")
     cursor = conn.cursor()
-    with open('data/mp_committee_memberships.csv') as f:
-        cursor.copy_from(f, 'mp_committee_memberships', columns=('mp_id', 'committee_name', 'start_date', 'end_date', 'role'), sep=",")
+    
+    with open(csv_path) as f:
+        cursor.copy_expert("COPY mp_committee_memberships(mp_id, committee_name, start_date, end_date, role) FROM stdin DELIMITERS ',' CSV HEADER QUOTE '\"';", f)
+    
     conn.commit()
     cursor.close()
     conn.close()
 
-    print("Done!")
-
 if __name__ == '__main__':
-    mp_committee_membership_pipe()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preprocess-data", help="preprocess the data", action="store_true")
+    parser.add_argument("--import-data", help="import preprocessed data", action="store_true")
+    args = parser.parse_args()
+    if args.preprocess_data:
+        preprocess_data()
+    if args.import_data:
+        import_data()
+    if not args.preprocess_data and not args.import_data:
+        preprocess_data()
+        import_data()

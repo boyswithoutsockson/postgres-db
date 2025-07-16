@@ -2,32 +2,29 @@ import os.path
 from lxml import etree
 import csv
 import psycopg2
-from .harmonize import harmonize_party
+from harmonize import harmonize_party
+
+csv_path = 'data/preprocessed/mp_party_memberships.csv'
 
 
-def mp_party_membership_pipe():
-    with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
-
-        vote_data = list(csv.reader(f, delimiter="\t", quotechar='"'))
-            
-
+def preprocess_data():
+    # First get active MPs
     conn = psycopg2.connect(database="postgres",
                             host="db",
                             user="postgres",
                             password="postgres",
                             port="5432")
     cursor = conn.cursor()
-
     cursor.execute("""SELECT id FROM members_of_parliament;""")
-
     active_mps = [mp[0] for mp in cursor.fetchall()]
+    cursor.close()
+    conn.close()
 
-    with open(os.path.join("data", "MemberOfParliament.tsv")) as f:
-
+    rows = []
+    with open(os.path.join("data", "raw", "MemberOfParliament.tsv")) as f:
         mp_data = [row for row in csv.reader(f, delimiter="\t", quotechar='"')]
 
     for mp in mp_data[1:]:
-
         mp_id = int(mp[0])
 
         if mp_id not in active_mps:
@@ -35,40 +32,73 @@ def mp_party_membership_pipe():
 
         xml = mp[7]
         root = etree.fromstring(xml)
-
         namespaces = root[0].nsmap
 
         # Current group
         cur_group = root.find("./Eduskuntaryhmat/NykyinenEduskuntaryhma", namespaces)
-        if cur_group is None or cur_group[0] is None or cur_group[0].text is None:
-            continue    
-        party = harmonize_party(cur_group[0].text)
-        AlkuPvm = cur_group.find("./AlkuPvm", namespaces)
-        start_date = "-".join(list(reversed((AlkuPvm.text).split("."))))
-        end_date = None
+        if cur_group is not None and cur_group[0] is not None and cur_group[0].text is not None:
+            party = harmonize_party(cur_group[0].text)
+            AlkuPvm = cur_group.find("./AlkuPvm", namespaces)
+            start_date = "-".join(list(reversed((AlkuPvm.text).split("."))))
+            end_date = None
 
-        cursor.execute("INSERT INTO mp_party_memberships (mp_id, party_id, start_date, end_date) VALUES (%s, %s, %s, %s);", 
-                                (mp_id, party, start_date, end_date))
+            rows.append({
+                "mp_id": mp_id,
+                "party_id": party,
+                "start_date": start_date,
+                "end_date": end_date
+            })
 
         for group in root.find("./Eduskuntaryhmat/EdellisetEduskuntaryhmat", namespaces):
             if group[0].text:
                 party = harmonize_party(group[0].text)
                 
                 for membership in group.findall("./Jasenyys", namespaces):
-                    
                     AlkuPvm = membership.find("./AlkuPvm", namespaces)
                     start_date = "-".join(list(reversed((AlkuPvm.text).split("."))))
                     
                     LoppuPvm = membership.find("./LoppuPvm", namespaces)
                     end_date = "-".join(list(reversed((LoppuPvm.text).split("."))))
 
-                    cursor.execute("INSERT INTO mp_party_memberships (mp_id, party_id, start_date, end_date) VALUES (%s, %s, %s, %s);", 
-                                (mp_id, party, start_date, end_date))
-                    
+                    rows.append({
+                        "mp_id": mp_id,
+                        "party_id": party,
+                        "start_date": start_date,
+                        "end_date": end_date
+                    })
+
+    with open(csv_path, 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=["mp_id", "party_id", "start_date", "end_date"])
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def import_data():
+    conn = psycopg2.connect(database="postgres",
+                            host="db",
+                            user="postgres",
+                            password="postgres",
+                            port="5432")
+    cursor = conn.cursor()
+
+    with open(csv_path) as f:
+        cursor.copy_expert("COPY mp_party_memberships(mp_id, party_id, start_date, end_date) FROM stdin DELIMITERS ',' CSV HEADER QUOTE '\"';", f)
+
     conn.commit()
     cursor.close()
     conn.close()
 
 
 if __name__ == '__main__':
-    mp_party_membership_pipe()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preprocess-data", help="preprocess the data", action="store_true")
+    parser.add_argument("--import-data", help="import preprocessed data", action="store_true")
+    args = parser.parse_args()
+    if args.preprocess_data:
+        preprocess_data()
+    if args.import_data:
+        import_data()
+    if not args.preprocess_data and not args.import_data:
+        preprocess_data()
+        import_data()
